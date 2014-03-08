@@ -2,15 +2,18 @@
 {% sparql as types %}
 SELECT ?type
 WHERE {
-    <{{ resource_iri|safe }}> rdf:type ?type .
+    <{{ request.build_absolute_uri|safe }}> rdf:type ?type .
 }
 {% endsparql %}
-<div itemscope itemid="{{ resource_iri }}">
+<div resource="{{ request.build_absolute_uri }}">
   <p>This is the weather:Index.html template</p>
   <p>This page is the following types:</p>
   <ul>
   {% for type in types %}
-    <li><a itemtype="{{ type.0 }}" href="{{ type.0 }}">{{ type.0 }}</a></li>
+    <li><a 
+	   property="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+	   href="{{ type.0 }}">{{ type.0 }}</a>
+    </li>
   {% endfor %}
   </ul>
 </div>

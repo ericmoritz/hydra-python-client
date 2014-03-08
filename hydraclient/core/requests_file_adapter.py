@@ -1,9 +1,17 @@
+### Do not import anything from hydraclient
+### This module will likely be given its own package.
+
 import requests
 from urlparse import urlparse
 import os
 from glob import glob
 import mimetypes
 from six import BytesIO
+from six.moves import map
+from collections import namedtuple
+from webob.acceptparse import Accept
+
+_FoundFile = namedtuple("_FoundFile", ["status", "content_type", "path"])
 
 
 class FileAdapter(requests.adapters.HTTPAdapter):
@@ -16,26 +24,26 @@ class FileAdapter(requests.adapters.HTTPAdapter):
 
 class _FileResponse(BytesIO):
     def __init__(self, request):
-        irl = request.url
-        found = self.__find_file(
-            request.headers.get('Accept', ''), 
-            urlparse(irl).path,
+        def reason(status):
+            return requests.status_codes._codes.get(
+            status, ['']
+            )[0].upper().replace('_', ' ')
+
+        def result(found):
+            self.status, content_type, self._path = found
+            self.reason = reason(self.status)
+            self.headers = {"Content-Type": content_type or ""}
+            BytesIO.__init__(
+                self,
+                _io_read_file(self.status, self._path)
+            )
+            
+        return result(
+            _io_find_file(
+                request.headers.get('Accept', "*/*"),
+                urlparse(request.url).path
+            )
         )
-        self.status, (content_type, encoding), self._path = found
-
-        self.reason = requests.status_codes._codes.get(
-            self.status, ['']
-        )[0].upper().replace('_', ' ')
-
-        self.headers = {
-            "Content-Type": content_type or ""
-        }
-
-        if self.status == 200:
-            BytesIO.__init__(self, open(self._path).read())
-        else:
-            BytesIO.__init__(self, "")
-
             
     @property
     def msg(self):
@@ -60,33 +68,53 @@ class _FileResponse(BytesIO):
         self.close()
 
 
-    @staticmethod
-    def __find_file(accepted, path):
-        not_found = 404, ("text/plain", "utf-8"), path
-        # Is the path a file?
-        if not os.path.exists(path):
-            return not_found
-        if os.path.isfile(path):
-            # return the path as is
-            return 200, mimetypes.guess_type(path), path
-        # Is the path a directory?
-        elif os.path.isdir(path):
-            # determine the which index file to return based on the
-            # accept header
-            files = _FileResponse.__offers(
-                glob("{path}/index.*".format(path=path))
-            )
-            try:
-                content_type, file_path = files.next()
-                return 200, content_type, file_path
-            except StopIteration:
-                return not_found
-            
+def _io_read_file(status, path):
+    if status == 200:
+        return open(path).read()
+    else:
+        return ""
 
-    @staticmethod
-    def __offers(files):
-        return (
-            (mimetypes.guess_type(file), file)
-            for file in files
+
+def _io_find_file(accepted, path):
+    # Is the path a file?
+    if os.path.isfile(path):
+        mimetype, _ = mimetypes.guess_type(path)
+        return _FoundFile(200, mimetype, path)
+    # Is the path a directory?
+    elif os.path.isdir(path):
+        return _find_index(
+            accepted,                 
+            path,
+            glob("{path}/index*.*".format(path=path))
         )
+    else:
+        return _FoundFile(404, "text/plain", path)
+
+def _find_index(accepted, path, filenames):
+    def second(t):
+        return t[1]
+
+    index_files_with_type = (lambda: [
+        (filename, mimetype)
+        for (filename, (mimetype, _)) in
+        (
+            (filename, mimetypes.guess_type(filename))
+            for filename in filenames
+        )
+    ])()
+
+    # If no index files were found, 404
+    if not index_files_with_type:
+        return _FoundFile(404, "text/plain", path)
+    else:
+        offers = list(map(second, index_files_with_type))
+        best = Accept(accepted).best_match(offers)
+
+        if best:
+            for filename, mimetype in index_files_with_type:
+                if mimetype == best:
+                    found = _FoundFile(200, mimetype, filename)
+                    return found
+        # index files exist, but none are acceptable
+        return _FoundFile(406, "text/plain", path)
 

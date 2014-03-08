@@ -88,15 +88,14 @@ def sparql(context, cdata=""):
     >>> g = g.parse(
     ... data='''
     ... @prefix schema: <http://schema.org/> .
-    ... <foo> schema:title "This is the title 2014" .
+    ... <.> schema:title "This is the title 2014" .
     ... ''',
+    ... publicID="http://example.com/",
     ... format="text/turtle"
     ... )
     ...
-    >>> object_iri = '<file:///Users/emoritz/Projects/django-hydra-client/foo>'
     >>> c = template.Context({
-    ...   '__graph__': g,
-    ...   'object_iri': object_iri,
+    ...   '__hydraclient_graph__': g,
     ... })
     ...
     >>> t = template.Template('''
@@ -105,7 +104,7 @@ def sparql(context, cdata=""):
     ... PREFIX schema: <http://schema.org/>
     ... SELECT ?title
     ... {
-    ...     {{ object_iri|safe }} schema:title ?title .
+    ...     <http://example.com/> schema:title ?title .
     ... }
     ... {% endsparql %}
     ... {{ obj.0.0.toPython }}
@@ -116,13 +115,14 @@ def sparql(context, cdata=""):
     Notice that the schema:dateCreated value is still a string, you
     will still need to parse it using a filter.
     """
-    graph = context['__hydraclient_graph__']
-    try:
-        r = graph.query(cdata)
-        return list(r)
-    except Exception, e:
-        raise template.TemplateSyntaxError(
-            """Unable to execute the following SPARQL query:
+    graph = context.get('__hydraclient_graph__')
+    if graph:
+        try:
+            r = graph.query(cdata)
+            return list(r)
+        except Exception, e:
+            raise template.TemplateSyntaxError(
+                """Unable to execute the following SPARQL query:
 
 {query}
 

@@ -1,3 +1,3 @@
 INSTALLED_APPS = [
-    'hydraclient'
+    'hydraclient.contrib.django.hydraclient'
 ]

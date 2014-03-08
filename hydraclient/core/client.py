@@ -6,47 +6,34 @@ from rdflib import Graph
 import mimetypes
 import urllib2
 from collections import namedtuple
-import requests
 import urlparse
 import os
+from .util import accepted
+from webob.acceptparse import Accept
+
+# Make sure that mimetypes supports the .jsonld extension
+mimetypes.add_type("application/ld+json", ".jsonld")
 
 from .requests_file_adapter import FileAdapter
-
-session = requests.Session()
-session.mount("file://", FileAdapter())
 
 
 Response = namedtuple("Response", ["status_code", "graph"])
 
-def irl(base_irl, path_info, query_string):
-    """
-    >>> irl(u"http://example.com/", u"", u"q=test")
-    u'http://example.com/?q=test'
 
-    >>> irl(u"http://example.com/", u"foo", u"q=test")
-    u'http://example.com/foo?q=test'
+def get(session, resource_irl, request_irl):
+    if not isinstance(session.adapters.get("file://"), FileAdapter):
+        session.mount("file://", FileAdapter())
 
-    >>> irl(u"http://example.com/", u"/foo", u"q=test")
-    u'http://example.com/foo?q=test'
-
-    >>> irl(u"http://example.com/", u"/foo", None)
-    u'http://example.com/foo'
-
-    >>> irl(u"http://example.com/", u"/foo", u"")
-    u'http://example.com/foo'
-
-    """
-    return __add_qs(
-        __irljoin(base_irl, path_info),
-        query_string
-    )
-
-
-def get(resource_irl, request_irl):
     g = Graph(identifier=request_irl)
-    resp = session.get(resource_irl)
+    accept = accepted()
+    resp = session.get(
+        resource_irl,
+        headers={"Accept": accept}
+    )
     content_type = __content_type(resp)
-    if __is_rdf(content_type):
+    # If we can use this as a graph, parse it.
+    if __is_acceptable_graph(accept, content_type):
+        data = resp.content
         resp.graph = g.parse(
             data=resp.content,
             format=content_type,
@@ -57,6 +44,29 @@ def get(resource_irl, request_irl):
         return resp
         
 
+def add_qs(irl, qs):
+    """
+    >>> add_qs(u"http://example.com/", u"q=test")
+    u'http://example.com/?q=test'
+
+    >>> add_qs(u"http://example.com/foo", u"q=test")
+    u'http://example.com/foo?q=test'
+
+    >>> add_qs(u"http://example.com/foo", None)
+    u'http://example.com/foo'
+
+    >>> add_qs(u"http://example.com/foo", u"")
+    u'http://example.com/foo'
+    """
+
+    if qs and isinstance(qs, basestring):
+        return irl + u"?" + qs
+    else:
+        return irl
+
+
+def irljoin(base_irl, path_info):
+    return urljoin(base_irl, path_info)
 
 ###===================================================================
 ### Internal
@@ -64,21 +74,8 @@ def get(resource_irl, request_irl):
 def __content_type(resp):
     return resp.headers.get("Content-Type", "")
 
-def __is_rdf(content_type):
-    return content_type in {
-        "application/rdf+xml", 
-        "text/turtle", 
-        "application/ld+json", 
-        "application/json"
-    }
+def __is_acceptable_graph(accepted, content_type):
+    return Accept(accepted).best_match([content_type]) is not None
 
 
-def __irljoin(base_irl, path_info):
-    return urljoin(base_irl, path_info)
 
-
-def __add_qs(irl, qs):
-    if qs and isinstance(qs, basestring):
-        return irl + u"?" + qs
-    else:
-        return irl
