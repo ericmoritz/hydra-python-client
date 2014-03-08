@@ -1,3 +1,4 @@
+*~
 *.py[cod]
 
 # C extensions
@@ -34,3 +35,34 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+.cache/
+.venv/
+/Makefile
+/examples/services/weather/index.ttl
+/examples/weather_client/manage.py
+/examples/weather_client/weather/__init__.py
+/examples/weather_client/weather/models.py
+/examples/weather_client/weather/templates/rdf/rdf:type/weather:Index.html
+/examples/weather_client/weather_client/__init__.py
+/examples/weather_client/weather_client/settings.py
+/examples/weather_client/weather_client/urls.py
+/examples/weather_client/weather_client/wsgi.py
+/hydraclient/__init__.py
+/hydraclient/contrib/__init__.py
+/hydraclient/contrib/django/__init__.py
+/hydraclient/contrib/django/hydraclient/__init__.py
+/hydraclient/contrib/django/hydraclient/http.py
+/hydraclient/contrib/django/hydraclient/models.py
+/hydraclient/contrib/django/hydraclient/render.py
+/hydraclient/contrib/django/hydraclient/settings.py
+/hydraclient/contrib/django/hydraclient/templatetags/__init__.py
+/hydraclient/contrib/django/hydraclient/templatetags/hydratags.py
+/hydraclient/contrib/django/hydraclient/test_settings.py
+/hydraclient/contrib/django/hydraclient/urls.py
+/hydraclient/contrib/django/hydraclient/views.py
+/hydraclient/core/__init__.py
+/hydraclient/core/client.py
+/hydraclient/core/http.py
+/hydraclient/core/requests_file_adapter.py
+/hydraclient/core/settings.py
+/setup.py
