@@ -1,21 +1,20 @@
 from hydraclient.core.settings import DEFAULT_JSONLD_CONTEXT
 import os
 
-
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
-
+###===================================================================
+### Added for hydraclient.contrib.django.hydraclient
+###===================================================================
+HERE= os.path.dirname(__file__)
+DEFAULT_WEATHER_BASE_URL=u"file://{path}/".format(
+    path=os.path.abspath(os.path.join(
+        HERE,
+        "../../services/weather"
+    ))
+)
 
 WEATHER_BASE_URL = os.environ.get(
     "WEATHER_BASE_URL",
-    u"file://{path}/".format(
-        path=os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "../../services/weather"
-            )
-        )
-    )
+    DEFAULT_WEATHER_BASE_URL
 )
 
 DEFAULT_JSONLD_CONTEXT = dict(
@@ -36,6 +35,13 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 "django.contrib.messages.context_processors.messages",
 )
 
+
+###===================================================================
+### Original project settings
+###===================================================================
+
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),

@@ -5,6 +5,8 @@ from django.http import HttpResponse, Http404
 from .settings import DEFAULT_JSONLD_CONTEXT
 from hydraclient.core import settings as client_settings
 from django.template.loader import render_to_string
+from webob.acceptparse import Accept
+
 rdf = Namespace(client_settings.DEFAULT_JSONLD_CONTEXT['rdf'])
 
 
@@ -24,23 +26,36 @@ def object_templates(graph, object_iri):
             yield template
 
 
-def render(service_resp, object_iri, context_instance=None):
+def render(service_resp, object_iri, user_agent_accept, context_instance=None):
     resp = _requests_response_to_django(service_resp)
-
     # If the service is a graph, render the object
     if hasattr(service_resp, "graph"):
-        template_names = object_templates(service_resp.graph, URIRef(object_iri))
-        context = {
-            '__hydraclient_graph__': service_resp.graph,
-        }
-        resp.content = render_to_string(
-            list(template_names),
-            context,
-            context_instance=context_instance
+        _render_graph(
+            resp, 
+            user_agent_accept, 
+            service_resp.graph, 
+            context_instance, 
+            object_iri
         )
-        resp['Content-Type'] = "text/html"
         
     return resp
+
+
+def _render_graph(resp, user_agent_accept, graph, context_instance, object_iri):
+    _render_graph_html(resp, graph, context_instance, object_iri)
+
+
+def _render_graph_html(resp, graph, context_instance, object_iri):
+    template_names = object_templates(graph, URIRef(object_iri))
+    context = {
+        '__hydraclient_graph__': graph,
+    }
+    resp.content = render_to_string(
+        list(template_names),
+        context,
+        context_instance=context_instance
+    )
+    resp['Content-Type'] = "text/html"
 
 
 def _requests_response_to_django(service_resp):
