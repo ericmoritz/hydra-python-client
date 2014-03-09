@@ -1,1 +1,9 @@
+{% load hydratags %}
+{% sparql as start %}
+    PREFIX xhtml: <http://www.w3.org/1999/xhtml#>
+    SELECT DISTINCT ?href { ?s xhtml:start ?href } LIMIT 1
+{% endsparql %}
+{% if start %}
+<h1><a href="{{ start.0.href }}">Home</a></h1>
+{% endif %}
 {% include "rdf/weather:pickLocation/weather:PickLocationForm.html" with subject_uri=request.build_absolute_uri %} 
