@@ -17,7 +17,7 @@ def object_types(graph, subject_iri):
     """
     return list(graph.triples(
         (subject_iri, rdf.type, None)
-    )) + [(subject_iri, rdf.type, rdfs.Resource)]
+    ))
 
 
 def object_templates(graph, object_iri):
@@ -92,6 +92,7 @@ def statement_to_templates(graph, statement):
         )
         yield "rdf/{subject_type}/{pred}/{obj}.html".format(**bits)
         yield "rdf/{pred}/{obj}.html".format(**bits)
+        yield "rdf/{obj}.html".format(**bits)
 
 
 def rdf_to_template(uriref):
