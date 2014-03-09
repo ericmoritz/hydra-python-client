@@ -19,8 +19,9 @@ WHERE {
     }
 }
 {% endsparql %}
-{{ subject_uri }}      
+{% if form %}
 <form action="{{ form.0.action }}" method="GET">
 <input name="{{ form.0.q }}" value="{{ form.0.q_val|default:"" }}" /> <input type="submit" value="search" />
 </form>
+{% endif %}
 {% include "rdf/weather:locationCollection/hydra:Collection.html" with subject_uri=subject_uri %}

@@ -20,8 +20,10 @@ WHERE {
 ORDER BY ?city ?state
 {% endsparql %}
       
+{% if choices %}
 <ul>
 {% for choice in choices %}
 <li><a href="{{ choice.href }}">{{ choice.city }}, {{ choice.state }}</a></li>
 {% endfor %}
 </ul>
+{% endif %}
