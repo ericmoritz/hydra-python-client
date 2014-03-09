@@ -35,7 +35,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 "django.contrib.messages.context_processors.messages",
 )
 
-
+APPEND_SLASH = False
 ###===================================================================
 ### Original project settings
 ###===================================================================

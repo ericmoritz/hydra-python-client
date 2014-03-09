@@ -1,0 +1,26 @@
+{% load hydratags %}
+
+{% sparql as form %}
+SELECT ?action ?q ?q_val
+WHERE {
+    <{{ subject_uri }}> weather:pickLocation ?action .
+      
+    weather:pickLocation hydra:supportedOperation ?op .
+    
+    ?op hydra:method "GET" ;
+        hydra:expects ?form .
+      
+    ?form hydra:supportedProperty ?prop .
+    
+    ?prop hydra:property hydra:freetextQuery ;
+          hydra:variable ?q .
+    OPTIONAL {
+       <{{ subject_uri }}> hydra:freetextQuery ?q_val .
+    }
+}
+{% endsparql %}
+{{ subject_uri }}      
+<form action="{{ form.0.action }}" method="GET">
+<input name="{{ form.0.q }}" value="{{ form.0.q_val|default:"" }}" /> <input type="submit" value="search" />
+</form>
+{% include "rdf/weather:locationCollection/hydra:Collection.html" with subject_uri=subject_uri %}

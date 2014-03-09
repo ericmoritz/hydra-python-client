@@ -1,0 +1,27 @@
+{% load hydratags %}
+
+{% sparql as choices %}
+PREFIX schema: <http://schema.org/>
+
+SELECT ?city ?state ?href
+WHERE {
+
+    <{{ subject_uri }}> 
+        weather:locationCollection ?coll .
+
+    ?coll
+        hydra:member ?member .
+
+    ?member
+        schema:addressLocality ?city ;
+        schema:addressRegion ?state ;
+	weather:viewSummary ?href .
+}
+ORDER BY ?city ?state
+{% endsparql %}
+      
+<ul>
+{% for choice in choices %}
+<li><a href="{{ choice.href }}">{{ choice.city }}, {{ choice.state }}</a></li>
+{% endfor %}
+</ul>

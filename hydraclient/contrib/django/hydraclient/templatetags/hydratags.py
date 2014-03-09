@@ -129,7 +129,7 @@ def sparql(context, cdata=""):
 For the following reason:
 
 {exception}""".format(query=annotate_sparql(cdata), exception=e)
-        )
+            )
 
 
 def annotate_sparql(query):
@@ -137,4 +137,3 @@ def annotate_sparql(query):
     for i, line in enumerate(query.splitlines()):
         lines.append("{i}. {line}".format(i=i+1, line=line))
     return "\n".join(lines)
-                     

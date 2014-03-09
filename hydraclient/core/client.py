@@ -3,13 +3,10 @@ Generic client library for surfing a linked data web service
 """
 from urlparse import urljoin
 from rdflib import Graph
-import mimetypes
-import urllib2
 from collections import namedtuple
-import urlparse
-import os
-from .util import accepted
 from webob.acceptparse import Accept
+from .http import accepted
+import mimetypes
 
 # Make sure that mimetypes supports the .jsonld extension
 mimetypes.add_type("application/ld+json", ".jsonld")
@@ -33,7 +30,6 @@ def get(session, resource_irl, request_irl):
     content_type = __content_type(resp)
     # If we can use this as a graph, parse it.
     if __is_acceptable_graph(accept, content_type):
-        data = resp.content
         resp.graph = g.parse(
             data=resp.content,
             format=content_type,
@@ -42,7 +38,7 @@ def get(session, resource_irl, request_irl):
         return resp
     else:
         return resp
-        
+
 
 def add_qs(irl, qs):
     """
@@ -68,14 +64,13 @@ def add_qs(irl, qs):
 def irljoin(base_irl, path_info):
     return urljoin(base_irl, path_info)
 
+
 ###===================================================================
 ### Internal
 ###===================================================================
 def __content_type(resp):
     return resp.headers.get("Content-Type", "")
 
+
 def __is_acceptable_graph(accepted, content_type):
     return Accept(accepted).best_match([content_type]) is not None
-
-
-
