@@ -1,6 +1,7 @@
 from django import template
 from django.template.base import TagHelperNode, parse_bits
 from inspect import getargspec
+from ..template import get_graph
 
 # TODO use a namedtuple for the sparql result
 
@@ -8,7 +9,6 @@ register = template.Library()
 
 
 def assignment_tag_with_cdata(library, func=None, takes_context=None,
-
                               name=None):
     def dec(func):
         params, varargs, varkw, defaults = getargspec(func)
@@ -115,7 +115,7 @@ def sparql(context, cdata=""):
     Notice that the schema:dateCreated value is still a string, you
     will still need to parse it using a filter.
     """
-    graph = context.get('__hydraclient_graph__')
+    graph = get_graph(context)
     if graph:
         try:
             r = graph.query(cdata)
@@ -131,9 +131,23 @@ For the following reason:
 {exception}""".format(query=annotate_sparql(cdata), exception=e)
             )
 
+@register.simple_tag(takes_context=True)
+def serialize_rdf(context, format):
+    """
+    Serialize the template's graph for exposure to javascript frontends
+
+    <script type="text/turtle">
+       {% serialize_rdf turtle %}
+    </script>
+    """
+    graph = get_graph(context)
+    return graph.serialize(format=format)
+
 
 def annotate_sparql(query):
     lines = []
     for i, line in enumerate(query.splitlines()):
         lines.append("{i}. {line}".format(i=i+1, line=line))
     return "\n".join(lines)
+
+

@@ -5,7 +5,9 @@
 
 <index.ttl>
     a weather:Index ;
-    weather:pickLocation <./search.ttl> .
+    weather:pickLocation <./search.ttl> ;
+    hydra:freetextQuery "spring" . # just an example
+     
 
 weather:pickLocation 
     a hydra:Link ;
