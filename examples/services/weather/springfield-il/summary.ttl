@@ -1,33 +1,34 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix weather: <http://vocab-ld.org/vocab/weather#> .
 @prefix hydra: <http://www.w3.org/ns/hydra/core#> .
+@prefix xhtml: <http://www.w3.org/1999/xhtml#> .
+@prefix schema: <http://schema.org/> .
 
 
-<.>
-    a weather:Index ;
-    weather:pickLocation <./search.ttl> ;
-    hydra:freetextQuery "spring" . # just an example
-     
-
-<./search.ttl>
-    a weather:PickLocationState .
+<summary.ttl> 
+    a weather:Summary ;
+    hydra:freetextQuery "Springfield, IL" ;
+    xhtml:start <../> ;
+    weather:pickLocation <../search.ttl> .
 
 
-weather:pickLocation
+weather:pickLocation 
     a hydra:Link ;
     hydra:supportedOperation [
         a weather:PickLocationOperation ;
         hydra:title "Search for a location" ;
         hydra:expects weather:PickLocationForm ;
         hydra:returns weather:PickLocationState ;
-        hydra:method "GET"
+        hydra:method "GET" 
     ] .
 
 
-weather:PickLocationForm
+weather:PickLocationForm 
     a hydra:Class ;
     hydra:supportedProperty [
         a hydra:SupportedProperty ;
         hydra:property hydra:freetextQuery ;
-        hydra:variable "q"
+        hydra:variable "q" 
     ] .
+
+            

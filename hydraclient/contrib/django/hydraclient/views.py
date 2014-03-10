@@ -12,13 +12,13 @@ from functools import wraps
 session = requests.session()
 
 
-def resource(request, path_info, base_irl=None, index_irl=None):
-    path_info = path_info if path_info else index_irl
+def resource(request, path_info, base_irl=None):
     query_string = request.META.get("QUERY_STRING", "")
     user_agent_accept = request.META.get("HTTP_ACCEPT", "")
 
-    request_irl = client.add_qs(path_info, query_string) or "."
+    request_irl = client.add_qs(path_info, query_string)
     service_irl = client.irljoin(base_irl, request_irl)
+    from pprint import pprint; pprint((request_irl, service_irl))
 
     absolute_request_irl = request.build_absolute_uri()
 

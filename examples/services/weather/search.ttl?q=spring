@@ -4,53 +4,51 @@
 @prefix xhtml: <http://www.w3.org/1999/xhtml#> .
 @prefix schema: <http://schema.org/> .
 
+
 <search.ttl?q=spring> 
     a weather:PickLocationState ;
-    a weather:Index ;
-    xhtml:start <./index.ttl> ;
+    xhtml:start <.> ;
     hydra:freetextQuery "spring" ;
     weather:pickLocation <search.ttl> ;
-    weather:locationCollection _:b2 .
+    weather:locationCollection [ 
+       a hydra:Collection ;
+       hydra:member [
+            schema:addressLocality "Springfield" ;
+            schema:addressRegion "IL" ;
+            weather:viewSummary <springfield-il/summary.ttl>
+       ] ;
 
-_:b2
-    a hydra:Collection ;
-    hydra:member _:b3 ;
-    hydra:member _:b4 ;
-    hydra:member _:b5 .
+       hydra:member [
+            schema:addressLocality "Springfield" ;
+            schema:addressRegion "MA" ;
+            weather:viewSummary <springfield-ma/summary.ttl>
+       ] ;
 
-
-_:b3
-    schema:addressLocality "Springfield" ;
-    schema:addressRegion "IL" ;
-    weather:viewSummary <springfield-il/summary.ttl> .
-
-_:b4
-    schema:addressLocality "Springfield" ;
-    schema:addressRegion "MA" ;
-    weather:viewSummary <springfield-ma/summary.ttl> .
-
-_:b5
-    schema:addressLocality "Springfield" ;
-    schema:addressRegion "MO" ;
-    weather:viewSummary <springfield-mo/summary.ttl> .
+       hydra:member [
+            schema:addressLocality "Springfield" ;
+            schema:addressRegion "MO" ;
+            weather:viewSummary <springfield-mo/summary.ttl> 
+       ] 
+    ].
 
 
 weather:pickLocation 
     a hydra:Link ;
-    hydra:supportedOperation _:b0 .
-_:b0
-    a weather:PickLocationOperation ;
-    hydra:title "Search for a location" ;
-    hydra:expects weather:PickLocationForm ;
-    hydra:returns weather:PickLocationState ;
-    hydra:method "GET" .
+    hydra:supportedOperation [
+        a weather:PickLocationOperation ;
+        hydra:title "Search for a location" ;
+        hydra:expects weather:PickLocationForm ;
+        hydra:returns weather:PickLocationState ;
+        hydra:method "GET" 
+    ] .
 
 
 weather:PickLocationForm 
     a hydra:Class ;
-    hydra:supportedProperty _:b1 .
-_:b1
-    a hydra:SupportedProperty ;
-    hydra:property hydra:freetextQuery ;
-    hydra:variable "q" .
+    hydra:supportedProperty [
+        a hydra:SupportedProperty ;
+        hydra:property hydra:freetextQuery ;
+        hydra:variable "q" 
+    ] .
+
             
