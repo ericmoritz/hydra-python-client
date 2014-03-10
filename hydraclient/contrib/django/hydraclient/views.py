@@ -12,7 +12,8 @@ from functools import wraps
 session = requests.session()
 
 
-def resource(request, path_info, base_irl=None):
+def resource(request, path_info, base_irl=None, index_irl=None):
+    path_info = path_info if path_info else index_irl
     query_string = request.META.get("QUERY_STRING", "")
     user_agent_accept = request.META.get("HTTP_ACCEPT", "")
 

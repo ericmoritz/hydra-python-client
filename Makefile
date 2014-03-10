@@ -1,9 +1,11 @@
+all: test
+
 test:
 	pip install pytest pytest-flakes pytest-pep8
 	DJANGO_SETTINGS_MODULE=hydraclient.contrib.django.hydraclient.test_settings py.test --doctest-modules hydraclient --flakes --pep8
 
-django-weather-web:
-	./examples/django-weather-web/manage.py runserver
+demo:
+	WEATHER_BASE_URL=file://`pwd`/examples/services/weather/ PORT=8000 foreman start
 
 docs: ./examples/service/weather/index.svg
 

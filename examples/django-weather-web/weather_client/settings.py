@@ -4,18 +4,8 @@ import os
 ###===================================================================
 ### Added for hydraclient.contrib.django.hydraclient
 ###===================================================================
-HERE= os.path.dirname(__file__)
-DEFAULT_WEATHER_BASE_URL=u"file://{path}/".format(
-    path=os.path.abspath(os.path.join(
-        HERE,
-        "../../services/weather"
-    ))
-)
+WEATHER_BASE_URL=os.environ['WEATHER_BASE_URL']
 
-WEATHER_BASE_URL = os.environ.get(
-    "WEATHER_BASE_URL",
-    DEFAULT_WEATHER_BASE_URL
-)
 
 DEFAULT_JSONLD_CONTEXT = dict(
     DEFAULT_JSONLD_CONTEXT,
