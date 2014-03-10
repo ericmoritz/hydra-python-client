@@ -2,6 +2,7 @@ from rdflib import Namespace, URIRef
 from pyld import jsonld
 from django.http import HttpResponse
 from .settings import DEFAULT_JSONLD_CONTEXT
+from .template import set_graph
 from hydraclient.core import settings as client_settings
 from hydraclient.core.http import best_format_for_accept, SerializerMapping
 from django.template.loader import render_to_string
@@ -58,9 +59,7 @@ def render_graph(resp, graph, context_instance, object_iri, user_agent_accept):
 def _render_graph_html(resp, graph, context_instance, object_iri):
     template_names = list(object_templates(graph, URIRef(object_iri)))
     if template_names:
-        context = {
-            '__hydraclient_graph__': graph,
-        }
+        context = set_graph({}, graph)
         resp.content = render_to_string(
             template_names,
             context,

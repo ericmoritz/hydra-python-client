@@ -8,4 +8,8 @@
 {% endif %}
 {% include "rdf/weather:pickLocation/weather:PickLocationForm.html" with subject_uri=request.build_absolute_uri %} 
 
+
 {% block content %}{% endblock %}
+
+<script class="embeddedTurtle" src="{{ request.build_absolute_uri }}" type="text/turtle">{% serialize_rdf "turtle" %}</script>
+
