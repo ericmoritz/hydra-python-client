@@ -9,6 +9,10 @@
     hydra:freetextQuery "spring" . # just an example
      
 
+<./search.ttl>
+    a weather:PickLocationState .
+    
+
 weather:pickLocation 
     a hydra:Link ;
     hydra:supportedOperation _:b0 .
