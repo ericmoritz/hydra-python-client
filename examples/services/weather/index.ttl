@@ -3,7 +3,7 @@
 @prefix hydra: <http://www.w3.org/ns/hydra/core#> .
 
 
-<index.ttl>
+<.>
     a weather:Index ;
     weather:pickLocation <./search.ttl> ;
     hydra:freetextQuery "spring" . # just an example
