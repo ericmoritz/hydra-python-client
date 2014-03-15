@@ -26,6 +26,7 @@ def object_templates(graph, object_iri):
         templates = statement_to_templates(graph, (object_iri, pred, type_iri))
         for template in templates:
             yield template
+    yield "rdf/rdf:Resource.html"
 
 
 def render(service_resp, object_iri, user_agent_accept, context_instance=None):
@@ -66,7 +67,6 @@ def _render_graph_html(resp, graph, context_instance, object_iri):
             context_instance=context_instance
         )
 
-
 def _render_graph_native(resp, graph, serializer_mapping):
     resp.content = graph.serialize(format=serializer_mapping.format)
 
@@ -92,7 +92,6 @@ def statement_to_templates(graph, statement):
         yield "rdf/{subject_type}/{pred}/{obj}.html".format(**bits)
         yield "rdf/{pred}/{obj}.html".format(**bits)
         yield "rdf/{obj}.html".format(**bits)
-
 
 def rdf_to_template(uriref):
     """
