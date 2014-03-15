@@ -18,8 +18,6 @@ def resource(request, path_info, base_irl=None):
 
     request_irl = client.add_qs(path_info, query_string)
     service_irl = client.irljoin(base_irl, request_irl)
-    from pprint import pprint; pprint((request_irl, service_irl))
-
     absolute_request_irl = request.build_absolute_uri()
 
     ttlb, service_resp = tc(
