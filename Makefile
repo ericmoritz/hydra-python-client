@@ -5,7 +5,7 @@ test:
 	DJANGO_SETTINGS_MODULE=hydraclient.contrib.django.hydraclient.test_settings py.test --doctest-modules hydraclient --flakes --pep8
 
 demo:
-	WEATHER_BASE_URL=file://./examples/services/weather/index.ttl PORT=8000 foreman start
+	WEATHER_BASE_URL=file://`pwd`/examples/services/weather/index.ttl PORT=8000 foreman start
 
 docs: ./examples/service/weather/index.svg
 
