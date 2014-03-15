@@ -8,8 +8,10 @@ from webob.acceptparse import Accept
 from .http import accepted
 import mimetypes
 
-# Make sure that mimetypes supports the .jsonld extension
+# Make sure that mimetypes supports the RDF extensions
 mimetypes.add_type("application/ld+json", ".jsonld")
+mimetypes.add_type("application/rdf+xml", ".rdf")
+mimetypes.add_type("text/turtle", ".ttl")
 
 from .requests_file_adapter import FileAdapter
 
