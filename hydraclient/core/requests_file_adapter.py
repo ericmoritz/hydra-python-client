@@ -13,6 +13,9 @@ from webob.acceptparse import Accept
 
 _FoundFile = namedtuple("_FoundFile", ["status", "content_type", "path"])
 
+mimetypes.add_type("text/turtle", "ttl")
+mimetypes.add_type("application/ld+json", "jsonld")
+mimetypes.add_type("application/rdf+xml", "rdf")
 
 class FileAdapter(requests.adapters.HTTPAdapter):
     def send(self, request, **kwargs):
