@@ -1,0 +1,7 @@
+@prefix wf: <http://vocab-ld.org/vocabs/web-framework#> .
+@prefix hydra: <http://www.w3.org/ns/hydra/core#> .
+
+<lottery/>
+    a wf:ServiceMount ;
+    hydra:entrypoint <file:///Users/emoritz/Projects/hydra-python-client/examples/services/weather/> .
+    

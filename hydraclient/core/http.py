@@ -58,12 +58,12 @@ def best_format_for_accept(accept,
     # TODO use rdflib's serializer plugins to figure this out
 
     >>> best_format_for_accept("text/html, text/turtle") == (
-    ... SerializerMapping('text/turtle', 'turtle','text/turtle')
+    ... SerializerMapping('text/turtle', 'turtle','text/turtle', 'ttl')
     ... )
     True
 
     >>> best_format_for_accept("text/turtle") == (
-    ... SerializerMapping('text/turtle', 'turtle','text/turtle')
+    ... SerializerMapping('text/turtle', 'turtle','text/turtle', 'ttl')
     ... )
     True
 

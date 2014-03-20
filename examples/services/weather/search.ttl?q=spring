@@ -7,7 +7,7 @@
 
 <search.ttl?q=spring> 
     a weather:PickLocationState ;
-    xhtml:start <.> ;
+    xhtml:start <./index.ttl> ;
     hydra:freetextQuery "spring" ;
     weather:pickLocation <search.ttl> ;
     weather:locationCollection [ 

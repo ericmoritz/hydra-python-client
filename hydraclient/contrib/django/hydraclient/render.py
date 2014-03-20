@@ -1,74 +1,68 @@
 from rdflib import Namespace, URIRef
+from rdflib.term import Identifier
 from pyld import jsonld
 from django.http import HttpResponse
 from .settings import DEFAULT_JSONLD_CONTEXT
-from .template import set_graph
+from .template import set_graph, set_doc_statement
 from hydraclient.core import settings as client_settings
 from hydraclient.core.http import best_format_for_accept, SerializerMapping
 from django.template.loader import render_to_string
 
 
+
 rdf = Namespace(client_settings.DEFAULT_JSONLD_CONTEXT['rdf'])
 rdfs = Namespace(client_settings.DEFAULT_JSONLD_CONTEXT['rdfs'])
 
-
-def object_types(graph, subject_iri):
-    """
-    TODO: Add the inheritence ordering...
-    """
-    return list(graph.triples(
-        (subject_iri, rdf.type, None)
-    ))
-
-
-def object_templates(graph, object_iri):
-    for (object_iri, pred, type_iri) in object_types(graph, object_iri):
-        templates = statement_to_templates(graph, (object_iri, pred, type_iri))
-        for template in templates:
-            yield template
-    yield "rdf/rdf:Resource.html"
-
-
-def render(service_resp, object_iri, user_agent_accept, context_instance=None):
+###===================================================================
+### Public
+###===================================================================
+def render_response(service_resp, doc_uri, user_agent_accept, context_instance=None):
     resp = _requests_response_to_django(service_resp)
     # If the service is a graph, render the object
     if hasattr(service_resp, "graph"):
-        render_graph(
+        _render_graph_response(
             resp,
             service_resp.graph,
             context_instance,
-            object_iri,
+            URIRef(doc_uri),
             user_agent_accept,
         )
-
     return resp
 
 
-def render_graph(resp, graph, context_instance, object_iri, user_agent_accept):
+def render_statement_html(graph, statement, context_instance):
+    template_names = list(_statement_to_templates(graph, statement))
+    context = set_doc_statement(
+        set_graph({}, graph),
+        statement,
+    )
+    return render_to_string(
+        template_names,
+        context,
+        context_instance=context_instance
+    )
+        
+
+###===================================================================
+### Internal 
+###===================================================================
+def _render_graph_response(resp, graph, context_instance, doc_uri, user_agent_accept):
     mapping = best_format_for_accept(
         user_agent_accept,
         default=SerializerMapping("text/html", "html", "text/html", "html")
     )
     resp['Content-Type'] = mapping.content_type
+
     if mapping.format == "html":
         # TODO: Use RDFlib's native serializers plugins for django?
-        _render_graph_html(resp, graph, context_instance, object_iri)
-    else:
-        _render_graph_native(resp, graph, mapping)
-
-
-def _render_graph_html(resp, graph, context_instance, object_iri):
-    template_names = list(object_templates(graph, URIRef(object_iri)))
-    if template_names:
-        context = set_graph({}, graph)
-        resp.content = render_to_string(
-            template_names,
-            context,
-            context_instance=context_instance
+        resp.content = render_statement_html(
+            graph, 
+            (doc_uri, None, None),
+            context_instance
         )
+    else:
+        resp.content = graph.serialize(format=serializer_mapping.format)
 
-def _render_graph_native(resp, graph, serializer_mapping):
-    resp.content = graph.serialize(format=serializer_mapping.format)
 
 
 def _requests_response_to_django(service_resp):
@@ -81,26 +75,56 @@ def _requests_response_to_django(service_resp):
     return resp
 
 
-def statement_to_templates(graph, statement):
-    s, p, o = statement
-    for (_, _, subject_type_iri) in object_types(graph, s):
-        bits = dict(
-            subject_type=rdf_to_template(subject_type_iri),
-            pred=rdf_to_template(p),
-            obj=rdf_to_template(o),
-        )
-        yield "rdf/{subject_type}/{pred}/{obj}.html".format(**bits)
-        yield "rdf/{pred}/{obj}.html".format(**bits)
-        yield "rdf/{obj}.html".format(**bits)
+def _rdf_types(graph, uri):
+    if isinstance(uri, Identifier):
+        return [o for (_,_,o) in graph.triples((uri, rdf.type, None))]
+    else:
+        return [None]
 
-def rdf_to_template(uriref):
+
+def _statement_to_templates(graph, s):
+    qname = graph.namespace_manager.qname
+    subject_types = _rdf_types(graph, s[0])
+    predicate = s[1]
+    object_types = _rdf_types(graph, s[2])
+    for subject_type in subject_types:
+        for object_type in object_types:
+            yield _type_to_template(qname, subject_type, predicate, object_type)
+        
+        
+
+def _type_to_template(qname, subject_type, predicate, object_type):
     """
-    Converts the full URI to a short URI using a JSON-LD context
+    >>> _type_to_template(lambda x: "q:"+x, "subject", "pred", "object")
+    'rdf/q:subject/q:pred/q:object.html'
+
+    >>> _type_to_template(lambda x: "q:"+x, "subject", "pred", None)
+    'rdf/q:subject/q:pred/rdf:Resource.html'
+
+    >>> _type_to_template(lambda x: "q:"+x, "subject", None, "object")
+    'rdf/q:subject/q:object.html'
+
+    >>> _type_to_template(lambda x: "q:"+x, "subject", None, None)
+    'rdf/q:subject.html'
+
+    >>> _type_to_template(lambda x: "q:"+x, None, None, None)
+    'rdf/rdf:Resource.html'
     """
-    uri = uriref.toPython()
-    obj = {
-        "@id": uri,
-        "@type": uri,
-    }
-    compacted = jsonld.compact(obj, DEFAULT_JSONLD_CONTEXT)
-    return compacted['@id']
+    if not subject_type:
+        subject_qname = "rdf:Resource"
+    else:
+        subject_qname = qname(subject_type)
+    
+    if not object_type:
+        object_qname = "rdf:Resource"
+    else:
+        object_qname = qname(object_type)
+        
+    if predicate:
+        bits = [subject_qname, qname(predicate), object_qname]
+    elif object_type:
+        bits = [subject_qname, object_qname]
+    else:
+        bits = [subject_qname]
+        
+    return "rdf/{}.html".format("/".join(bits))
