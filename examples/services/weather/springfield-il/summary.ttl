@@ -8,7 +8,7 @@
 <summary.ttl> 
     a weather:Summary ;
     hydra:freetextQuery "Springfield, IL" ;
-    xhtml:start <../> ;
+    xhtml:start <../index.ttl> ;
     weather:pickLocation <../search.ttl> .
 
 

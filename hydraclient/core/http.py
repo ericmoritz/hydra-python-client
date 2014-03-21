@@ -44,6 +44,12 @@ def guess_serializer(ext):
             return mapping
 
 
+def best_parser_for_content_type(content_type):
+    for mapping in CLIENT_ACCEPTS:
+        if mapping.accept == content_type:
+            return mapping
+
+
 def best_format_for_accept(accept,
                            default=SerializerMapping(None, None, None, None)):
     """
@@ -52,12 +58,12 @@ def best_format_for_accept(accept,
     # TODO use rdflib's serializer plugins to figure this out
 
     >>> best_format_for_accept("text/html, text/turtle") == (
-    ... SerializerMapping('text/turtle', 'turtle','text/turtle')
+    ... SerializerMapping('text/turtle', 'turtle','text/turtle', 'ttl')
     ... )
     True
 
     >>> best_format_for_accept("text/turtle") == (
-    ... SerializerMapping('text/turtle', 'turtle','text/turtle')
+    ... SerializerMapping('text/turtle', 'turtle','text/turtle', 'ttl')
     ... )
     True
 
@@ -78,4 +84,4 @@ def accepted():
     # TODO use rdflib's parser plugins to figure this out
 
     """
-    return "text/turtle; application/ld+json; application/rdf+xml"
+    return "text/turtle, application/ld+json, application/rdf+xml"
