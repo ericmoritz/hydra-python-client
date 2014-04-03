@@ -1,8 +1,11 @@
 all: test
 
 test:
-	pip install pytest pytest-flakes pytest-pep8
-	DJANGO_SETTINGS_MODULE=hydraclient.contrib.django.hydraclient.test_settings py.test --doctest-modules hydraclient #--flakes --pep8
+	rm -rf .unit-test-venv
+	virtualenv .unit-test-venv
+	./.unit-test-venv/bin/python setup.py develop
+	./.unit-test-venv/bin/pip install pytest pytest-flakes pytest-pep8
+	DJANGO_SETTINGS_MODULE=hydraclient.contrib.django.hydraclient.test_settings ./.unit-test-venv/bin/py.test --doctest-modules hydraclient #--flakes --pep8
 
 demo:
 	CONFIG_URL=file://`pwd`/examples/django-weather-web/config.ttl ./examples/django-weather-web/manage.py runserver
@@ -11,6 +14,10 @@ docs: ./examples/service/weather/index.svg
 
 clean:
 	rm -f ./examples/service/weather/*.svg
+
+# Used for manually replicating to github using hubflow methods
+push-github:
+	git push upstream master:develop
 
 ./examples/service/weather/index.svg:
 	rdfcat \
