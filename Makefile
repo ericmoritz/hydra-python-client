@@ -17,7 +17,8 @@ clean:
 
 # Used for manually replicating to github using hubflow methods
 push-github:
-	git push upstream master:develop
+	git fetch origin
+	git push upstream origin/master:develop
 
 ./examples/service/weather/index.svg:
 	rdfcat \
